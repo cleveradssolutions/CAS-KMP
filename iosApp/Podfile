@@ -1,0 +1,36 @@
+platform :ios, '15.0'
+use_frameworks!
+
+# The CAS.AI SDK version is declared once, in gradle/libs.versions.toml, so that the Podfile, the
+# Android dependencies and the generated podspecs can never drift apart.
+cas_version = File.read(File.join(__dir__, '..', 'gradle', 'libs.versions.toml'))[/^cas\s*=\s*"([^"]+)"/, 1]
+raise 'Could not read the `cas` version from gradle/libs.versions.toml' if cas_version.nil?
+
+source 'https://github.com/CocoaPods/Specs.git'
+source 'https://github.com/cleveradssolutions/CAS-Specs.git'
+
+target 'iosApp' do
+  # Kotlin framework of the shared Compose Multiplatform module.
+  pod 'cas_demo_app', :path => '../cas-demo-app'
+
+  # CAS.AI SDK and the iOS mediation adapters. The Android ones are declared in the `cas { }`
+  # block of cas-demo-app/build.gradle.kts; the two lists are chosen per platform on purpose,
+  # because network availability differs between them.
+  #
+  # A production application normally starts from the curated set that CAS.AI keeps up to date:
+  #   pod 'CleverAdsSolutions-SDK/Optimal', cas_version
+  pod 'CleverAdsSolutions-SDK/GoogleAds', cas_version
+  pod 'CleverAdsSolutions-SDK/UnityAds', cas_version
+end
+
+# The shared module only has the arm64 iOS targets, so nothing can provide an x86_64 simulator
+# slice. Exclude it everywhere, otherwise the linker looks for a slice that is never built.
+# Intel Macs therefore cannot run the simulator build; add an iosX64 target to the Kotlin modules
+# if that is ever needed again.
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'x86_64 arm64e armv7 armv7s'
+    end
+  end
+end

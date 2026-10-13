@@ -1,0 +1,7 @@
+// CocoaPods writes the generated xcconfig as the base configuration of the `iosApp`
+// target, so this file only carries the project level identity of the sample app.
+PRODUCT_NAME=CASKMP
+PRODUCT_BUNDLE_IDENTIFIER=com.cleveradssolutions.kmp.demo
+
+CURRENT_PROJECT_VERSION=1
+MARKETING_VERSION=1.0

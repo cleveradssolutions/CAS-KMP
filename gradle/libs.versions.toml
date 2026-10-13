@@ -1,0 +1,43 @@
+[versions]
+# CAS
+# Version of the CAS.AI SDK (Android artifacts + iOS CocoaPods) this library is built against.
+cas = "4.8.0"
+# Published version of this Kotlin Multiplatform library itself.
+casKmp = "4.8.0"
+
+# Build tools
+agp = "8.13.2"
+kotlin = "2.3.21"
+maven-publish = "0.36.0"
+
+# Platforms
+android-compileSdk = "36"
+android-minSdk = "25"
+android-demoMinSdk = "26"
+android-targetSdk = "36"
+ios-deploymentTarget = "13.0"
+
+# Libraries
+compose = "1.10.3"
+material3 = "1.8.2"
+coroutines = "1.10.2"
+lifecycleRuntimeKtx = "2.6.1"
+activityCompose = "1.13.0"
+
+[libraries]
+cas-sdk = { module = "com.cleveradssolutions:cas-sdk", version.ref = "cas" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+
+[plugins]
+multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp"}
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+native-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish"}
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+cas-android = { id = "com.cleveradssolutions.gradle-plugin", version.ref = "cas" }
