@@ -1,8 +1,7 @@
 package com.cleveradssolutions.kmp.demo.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
@@ -30,8 +29,8 @@ import com.cleveradssolutions.plugin.kmp.CASMobileAds
 import com.cleveradssolutions.kmp.demo.TAG
 import com.cleveradssolutions.kmp.demo.components.AppButton
 import com.cleveradssolutions.kmp.demo.components.DemoCard
+import com.cleveradssolutions.kmp.demo.components.DemoScreenContainer
 import com.cleveradssolutions.kmp.demo.components.DemoTitle
-import com.cleveradssolutions.kmp.demo.components.ScreenBackground
 
 @Composable
 fun MRecExampleScreen() {
@@ -39,12 +38,77 @@ fun MRecExampleScreen() {
     var loaded by remember { mutableStateOf(false) }
     var reloadKey by remember { mutableStateOf(0) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ScreenBackground)
-            .padding(horizontal = 20.dp, vertical = 20.dp),
-        contentAlignment = Alignment.Center,
+    val bannerSize = remember { CASBannerSize.MEDIUM_RECTANGLE }
+
+    DemoScreenContainer(
+        anchoredAd = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(vertical = 6.dp)
+                    // A MREC is 250dp tall and takes most of a landscape screen. Giving it its own
+                    // space keeps it away from the controls above, which then scroll instead.
+                    .height(bannerSize.height.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                key(reloadKey) {
+                    val bannerAd = remember(bannerSize) {
+                        CASBannerAdContent(
+                            casId = CASMobileAds.TEST_ID,
+                            size = bannerSize,
+                            autoLoad = false,
+                            refreshInterval = 30,
+                            callback = object : CASBannerAdContentCallback {
+                                override fun onBannerAdLoaded(info: CASAdContentInfo) {
+                                    println("$TAG: MREC Banner Ad loaded")
+                                    loaded = true
+                                }
+
+                                override fun onBannerAdFailed(error: CASError) {
+                                    println("$TAG: MREC Banner Ad failed: $error")
+                                    loaded = false
+                                }
+
+                                override fun onBannerAdClicked(info: CASAdContentInfo) {
+                                    println("$TAG: MREC Banner Ad clicked")
+                                }
+
+                                override fun onBannerAdImpression(info: CASAdContentInfo) {
+                                    println("$TAG: MREC Banner Ad impression: $info")
+                                }
+                            },
+                        )
+                    }
+
+                    LaunchedEffect(bannerAd) {
+                        loaded = false
+                        bannerAd.load()
+                    }
+
+                    DisposableEffect(bannerAd) {
+                        onDispose { bannerAd.destroy() }
+                    }
+
+                    CASBannerAd(
+                        adContent = bannerAd,
+                        modifier = Modifier
+                            .width(bannerSize.width.dp)
+                            .height(bannerSize.height.dp)
+                            .offset(
+                                y = if (visible && loaded) {
+                                    0.dp
+                                } else {
+                                    // Past the bottom of the screen, not just past the slot: a
+                                    // banner that is merely clipped still counts as visible for
+                                    // the SDK and would collect impressions nobody can see.
+                                    (bannerSize.height + 70).dp
+                                },
+                            ),
+                    )
+                }
+            }
+        },
     ) {
         DemoCard {
             DemoTitle(text = "MREC Ad")
@@ -60,63 +124,6 @@ fun MRecExampleScreen() {
                     reloadKey++
                 },
             )
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .offset(y = if (visible && loaded) 0.dp else 320.dp)
-                .navigationBarsPadding()
-                .padding(vertical = 6.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            key(reloadKey) {
-                val bannerSize = remember { CASBannerSize.MEDIUM_RECTANGLE }
-
-                val bannerAd = remember(bannerSize) {
-                    CASBannerAdContent(
-                        casId = CASMobileAds.TEST_ID,
-                        size = bannerSize,
-                        autoLoad = false,
-                        refreshInterval = 30,
-                        callback = object : CASBannerAdContentCallback {
-                            override fun onBannerAdLoaded(info: CASAdContentInfo) {
-                                println("$TAG: MREC Banner Ad loaded")
-                                loaded = true
-                            }
-
-                            override fun onBannerAdFailed(error: CASError) {
-                                println("$TAG: MREC Banner Ad failed: $error")
-                                loaded = false
-                            }
-
-                            override fun onBannerAdClicked(info: CASAdContentInfo) {
-                                println("$TAG: MREC Banner Ad clicked")
-                            }
-
-                            override fun onBannerAdImpression(info: CASAdContentInfo) {
-                                println("$TAG: MREC Banner Ad impression: $info")
-                            }
-                        },
-                    )
-                }
-
-                LaunchedEffect(bannerAd) {
-                    loaded = false
-                    bannerAd.load()
-                }
-
-                DisposableEffect(bannerAd) {
-                    onDispose { bannerAd.destroy() }
-                }
-
-                CASBannerAd(
-                    adContent = bannerAd,
-                    modifier = Modifier
-                        .width(bannerSize.width.dp)
-                        .height(bannerSize.height.dp),
-                )
-            }
         }
     }
 }

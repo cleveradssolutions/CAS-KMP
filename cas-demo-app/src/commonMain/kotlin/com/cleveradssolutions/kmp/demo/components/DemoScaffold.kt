@@ -1,13 +1,17 @@
 package com.cleveradssolutions.kmp.demo.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,19 +33,42 @@ internal val PrimaryText = Color(0xFFE8EEF6)
 internal val SecondaryText = Color(0xFFA5B3C5)
 internal val ErrorText = Color(0xFFFF6B6B)
 
+/**
+ * Screen frame shared by the examples.
+ *
+ * [content] scrolls whenever it does not fit, which it does not in landscape, and stays centred
+ * while it does. [anchoredAd] is placed below it and keeps its own space, so an ad pinned to the
+ * bottom of the screen never covers the controls.
+ */
 @Composable
 internal fun DemoScreenContainer(
     modifier: Modifier = Modifier,
+    anchoredAd: (@Composable () -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .background(ScreenBackground)
-            .padding(horizontal = 20.dp, vertical = 20.dp),
-        contentAlignment = Alignment.Center,
-        content = content,
-    )
+            .background(ScreenBackground),
+    ) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = maxHeight)
+                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                contentAlignment = Alignment.Center,
+                content = content,
+            )
+        }
+
+        anchoredAd?.invoke()
+    }
 }
 
 @Composable
